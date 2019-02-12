@@ -1,0 +1,121 @@
+<!DOCTYPE html>
+<html>
+
+<head>
+    <link rel='stylesheet' href='https://api.mapbox.com/mapbox-gl-js/plugins/mapbox-gl-draw/v1.0.9/mapbox-gl-draw.css' type='text/css' />
+
+ <script src='https://api.mapbox.com/mapbox-gl-js/v0.53.0/mapbox-gl.js'></script>
+<link href='https://api.mapbox.com/mapbox-gl-js/v0.53.0/mapbox-gl.css' rel='stylesheet' />
+<title>Mappr</title>
+</head>
+
+<body>
+
+    <div id='map'></div>
+    <div id='menu'>
+        <input id='basic' type='radio' name='rtoggle' value='basic' checked='checked'>
+        <label for='basic'>basic</label>
+        <input id='streets' type='radio' name='rtoggle' value='streets'>
+        <label for='streets'>streets</label>
+        <input id='bright' type='radio' name='rtoggle' value='bright'>
+        <label for='bright'>bright</label>
+        <input id='light' type='radio' name='rtoggle' value='light'>
+        <label for='light'>light</label>
+        <input id='dark' type='radio' name='rtoggle' value='dark'>
+        <label for='dark'>dark</label>
+        <input id='satellite' type='radio' name='rtoggle' value='satellite'>
+        <label for='satellite'>satellite</label>
+        </div>
+
+        <div class='calculation-box'>
+            <p>Draw a polygon using the draw tools.</p>
+            <div id='calculated-area'></div>
+            </div>
+    <style>
+        body { margin:0; padding:0; }
+        #map { position:absolute; top:0; bottom:0; width:100%; }
+        #menu {
+position: absolute;
+background: #fff;
+padding: 10px;
+font-family: 'Open Sans', sans-serif;
+}
+.calculation-box {
+height: 75px;
+width: 150px;
+position: absolute;
+bottom: 40px;
+left: 10px;
+background-color: rgba(255, 255, 255, .9);
+padding: 15px;
+text-align: center;
+}
+ 
+p {
+font-family: 'Open Sans';
+margin: 0;
+font-size: 13px;
+}
+        </style>
+        <script src='https://api.tiles.mapbox.com/mapbox.js/plugins/turf/v3.0.11/turf.min.js'></script>
+
+        <script src='https://api.mapbox.com/mapbox-gl-js/plugins/mapbox-gl-draw/v1.0.9/mapbox-gl-draw.js'></script>
+
+    <script>
+        
+    mapboxgl.accessToken = 'pk.eyJ1IjoiY21sdWdvY2UiLCJhIjoiY2pzMjl4cWo5MjJ5YjRhdWs4ZzRjcngzeCJ9.4QjCXWXcrYM9qYfZ7Yqj9g';
+    var map = new mapboxgl.Map({
+    container: 'map',
+    style: 'mapbox://styles/mapbox/basic-v9',
+    center: [-74.50, 40], // starting position
+    zoom: 9 // starting zoom
+    });
+
+    var layerList = document.getElementById('menu');
+var inputs = layerList.getElementsByTagName('input');
+ 
+function switchLayer(layer) {
+var layerId = layer.target.id;
+map.setStyle('mapbox://styles/mapbox/' + layerId + '-v9');
+}
+ 
+for (var i = 0; i < inputs.length; i++) {
+inputs[i].onclick = switchLayer;
+}
+
+    // Add zoom and rotation controls to the map.
+map.addControl(new mapboxgl.NavigationControl());
+ //draw polygon
+var draw = new MapboxDraw({
+displayControlsDefault: false,
+controls: {
+polygon: true,
+trash: true
+}
+});
+map.addControl(draw);
+ 
+map.on('draw.create', updateArea);
+map.on('draw.delete', updateArea);
+map.on('draw.update', updateArea);
+ 
+function updateArea(e) {
+var data = draw.getAll();
+var answer = document.getElementById('calculated-area');
+if (data.features.length > 0) {
+var area = turf.area(data);
+// restrict to area to 2 decimal points
+var rounded_area = Math.round(area*100)/100;
+answer.innerHTML = '<p><strong>' + rounded_area + '</strong></p><p>square meters</p>';
+} else {
+answer.innerHTML = '';
+if (e.type !== 'draw.delete') alert("Use the draw tools to draw a polygon!");
+}
+}
+    </script>
+</body>
+
+
+
+
+</html>
